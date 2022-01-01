@@ -1,78 +1,74 @@
-import com.soywiz.klock.seconds
-import com.soywiz.korge.*
-import com.soywiz.korge.tween.*
+import com.soywiz.korge.Korge
+import com.soywiz.korge.input.mouse
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
 
-class Position(var x: Int = 0, var y: Int = 0) {
-	override fun toString(): String {
-		return "($x, $y)"
-	}
-
-	operator fun plusAssign(distance: Position) {
-		this.x += distance.x
-		this.y += distance.y
-	}
-}
-
-class Character(
-	var name: String = "",
-	var imageFile: String = "pope.png",
-	var position: Position = Position()
-) {
-	var image: Image? = null
-		get() {
-			if (field == null)
-				throw Exception("maaaaal")
-			return field
-		}
-
-	constructor(name: String) : this() {
-		this.name = name
-	}
-
-	public fun walk(distance: Position) : Boolean {
-		this.position += distance
-		return true
-	}
-
-	fun loadImage(image: Image) {
-		this.image = image
-	}
-	override fun toString(): String {
-		return "$name - $position"
-	}
-}
-
-suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
-	val minScale = 0.09
-	val maxScale = 0.11
-
-	var characters : ArrayList<Character> = arrayListOf(
-		Character("Bartús"),
-		Character("David", "arch.png", Position(2,0)),
-		Character("Ale", "barb.png", Position(6,6)),
-		Character("JA", "warr.png", Position(8,5)),
-		Character("Juan", "wiza.png", Position(3,3)),
+suspend fun main() = Korge(width = 622, height = 512, bgcolor = Colors["#2b2b2b"]) {
+	// Crea juego y personajes
+	var game = Game(
+			arrayListOf(
+				Character("Bartús"),
+				Character("David", "arch.png", Position(2,0)),
+				Character("Ale", "barb.png", Position(6,6)),
+				Character("JA", "warr.png", Position(8,5)),
+				Character("Juan", "wiza.png", Position(3,3)),
+			)
 	)
 
+	// Carga el tablero
+	game.backgroundImage = image(resourcesVfs["background.png"].readBitmap())
+	for (i in 0..9) {
+		val row : ArrayList<RoundRect> = arrayListOf()
+		for (j in 0..9) {
+			row.add(roundRect(width = 50.0, height = 50.0, rx = 3.0, fill = Colors.BLACK) {
+				xy(i * 51 + 1, j * 51 + 1)
+				alpha(0.2)
+				mouse {
+					over {
+						game.mouseOver(Position(i, j))
+					}
+					out  {
+						game.mouseOut(Position(i, j))
+					}
+					click {
+						game.click(Position(i, j))
+					}
+				}
+			})
+		}
+		game.board.add(row)
+	}
+
 	// Carga las imágenes en los objetos de personajes
-	for (character in characters) {
+	for (character in game.characters) {
+		val displayPosition = Position(character.position.x * 51 + 26, character.position.y * 51 + 26)
 		val image = image(resourcesVfs[character.imageFile].readBitmap()) {
 			anchor(.5, .5)
-			scale(.1)
-			position(character.position.x * 51 + 30, character.position.y * 51 + 30)
+			scale(.09)
+			position(displayPosition.x, displayPosition.y)
+			alpha(0.4)
 		}
-		character.loadImage(image)
+		image.mouse {
+			over {
+				game.mouseOver(character)
+			}
+			out {
+				game.mouseOut(character)
+			}
+			click {
+				game.click(character)
+			}
+		}
+		character.image = image
+		character.tooltip = text(character.name, textSize = 16.0, color = Colors.LIGHTSALMON)
+								.xy(displayPosition.x, displayPosition.y)
+								.visible(false)
 	}
 
 	// Game loop
-	while (true) {
+/*	while (true) {
 		for (character in characters) {
 
 			character.image.tween(
@@ -88,5 +84,5 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 		}
 		// Read input (mouse or keyboard)
 		// Wait for fps
-	}
+	}*/
 }
