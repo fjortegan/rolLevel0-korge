@@ -31,6 +31,7 @@ class Game(
     }
 
     fun click(character: Character) {
+        // TODO: highlight board
         if (hasActive())
             activeCharacter?.active = false
         if (activeCharacter==character)
@@ -50,7 +51,7 @@ class Game(
             } else {
                 square.fill = Colors.AQUAMARINE
             }
-            square.alpha(0.4)
+            square.alpha(0.25)
         }
     }
     fun mouseOut(position: Position) {
