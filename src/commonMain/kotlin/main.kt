@@ -9,7 +9,8 @@ suspend fun main() = Korge(width = 622, height = 512, bgcolor = Colors["#2b2b2b"
 	// Crea juego y personajes
 	var game = Game(
 			arrayListOf(
-				Character("Bartús"),
+				Character("Maltús"),
+				Character("Maria", "arch.png", Position(6,0)),
 				Character("David", "arch.png", Position(2,0)),
 				Character("Ale", "barb.png", Position(6,6)),
 				Character("JA", "warr.png", Position(8,5)),
